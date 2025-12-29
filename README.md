@@ -1,17 +1,85 @@
-This is a tool base mod only ment to be added to a mod pack when you want to change the selling_bin.json file. 
-Most commonly used in BCG+ And Mayview
+SellingGen
+A lightweight trade‑generation helper for modpack developers
 
-=================================================
-Instructions: 
-=================================================
-Download the mod packaged mod from releases. 
-Extract and you will have 2 files. Both have seperate locations but are easy to find. SellingGen.jar will go into mod folder. 
-And override.py will go into config/sellingbin folder. 
+  
+  
+  
+  
 
-If you use prism launcher your file path will look something like this. (EXAMPLE: PrismLauncher/instances/Mayview Extended/minecraft/config/sellingbin/)
-you should see a file aready there it will be Selling_bin.json. In order to use the override.py you need to first run the game with the mod in your folder and launch any world, It works on client worlds, and server worlds. then type the command /sellingbin regen
-If it was succesful you will see. "SellingBin file regenerated!" In green in your chat. 
+Versioning
+SellingGen follows a simple versioning scheme:
 
+Major — Breaking changes to the JSON format or merge behavior
 
-Afterwards now in /config/sellingbin/  You will see 3 files, selling_bin.json, sellingbin_generated.json, and override.py. Now all you need to do is run override.py and it will merge both files into one and will give you sellingbin_merged.json. simply rename this file selling_bin.json or copy and paste the contents into it. 
-afterwards Simply remove the mod sellinggen.jar or disable it and play like usual. 
+Minor — New features or improvements
+
+Patch — Bug fixes or small adjustments
+
+Current recommended version:
+v1.0.0 (stable for BCG+ and Mayview)
+
+You can expand this later with a changelog or compatibility matrix if you want.
+
+Overview
+SellingGen is a tool‑only mod designed for modpack creators who need to regenerate or modify the selling_bin.json file used by SellingBin‑based economy systems. It is commonly used in BCG+ and Mayview packs.
+
+This mod is not intended for normal gameplay — only for development workflows.
+
+Installation
+Download the packaged release and extract it. You will get two files:
+
+SellingGen.jar — place this in your mods folder
+
+override.py — place this in config/sellingbin/
+
+Example Prism Launcher path:
+
+Code
+PrismLauncher/instances/Mayview Extended/minecraft/config/sellingbin/
+You should already see a selling_bin.json file in this folder.
+
+Generating the Files
+Launch the game with SellingGen.jar installed.
+
+Enter any world (single‑player or server).
+
+Run:
+
+Code
+/sellingbin regen
+If successful, you’ll see:
+
+“SellingBin file regenerated!” (green text)
+
+After this, the folder will contain:
+
+selling_bin.json — your manual file
+
+sellingbin_generated.json — the auto‑generated file
+
+override.py — the merge script
+
+Merging Your Changes
+Run override.py using Python. It will:
+
+Read both JSON files
+
+Keep all your manual edits
+
+Add any new generated trades
+
+Output:
+
+Code
+sellingbin_merged.json
+Rename this file to selling_bin.json or copy its contents into the existing file.
+
+Final Step
+Once your merged file is in place:
+
+Remove SellingGen.jar  
+or
+
+Disable it in your launcher
+
+Your pack will now use the updated selling_bin.json normally.
