@@ -1,5 +1,17 @@
-Currently the mod supports Neoforge 21.1.216
-And Minecraft version 1.21.1
+### NeoForge Compatibility
+SellingGen is built for **Minecraft 1.21.1** and supports all NeoForge versions in the **21.1.x** series.
+
+Because the mod does not use mixins or deep NeoForge APIs, it is compatible with:
+- NeoForge 21.1.0+
+- Prism Launcher NeoForge builds
+- Server and client environments
+
+If you are running Minecraft 1.21.1 with NeoForge 21.1.x, SellingGen will work.
+
+
+
+
+
 Relevant files to make changes are located in src/main/java/com/example/sellinggen
 
 
