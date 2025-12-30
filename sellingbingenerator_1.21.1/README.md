@@ -9,6 +9,9 @@ Because the mod does not use mixins or deep NeoForge APIs, it is compatible with
 If you are running Minecraft 1.21.1 with NeoForge 21.1.x, SellingGen will work.
 
 
+Tools folder Includes the python script to overide and merge the previous sellingbin.json as well as a html file for reading and debugging console logs. 
+
+
 
 
 
