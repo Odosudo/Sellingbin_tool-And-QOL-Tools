@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Minecraft Log Viewer — Neon Edition</title>
+
+<style>
+/* ————————————————————————————————————————————————
+   GLOBAL THEME — NEON CYBERPUNK
+——————————————————————————————————————————————————— */
+body {
+    background: #000000;
+    color: #e6e6e6;
+    margin: 0;
+    font-family: "Inter", "SF Pro Text", "Segoe UI", sans-serif;
+    letter-spacing: 0.2px;
+}
+
+/* ————————————————————————————————————————————————
+   HEADER
+——————————————————————————————————————————————————— */
+h2 {
+    margin: 0;
+    padding: 22px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #111;
+    font-weight: 600;
+    color: #00eaff;
+    text-shadow: 0 0 8px #00eaff;
+}
+
+/* ————————————————————————————————————————————————
+   CONTROL PANEL + TOOLBAR
+——————————————————————————————————————————————————— */
+.controls {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    padding: 18px 22px;
+    border-bottom: 1px solid #111;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.toolbar .group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar .group strong {
+    margin-right: 6px;
+    white-space: nowrap;
+    color: #00eaff;
+    text-shadow: 0 0 6px #00eaff;
+}
+
+/* ————————————————————————————————————————————————
+   BUTTONS — NEON GLOW
+——————————————————————————————————————————————————— */
+button {
+    margin: 0;
+    padding: 6px 14px;
+    background: #0a0a0a;
+    border: 1px solid #00eaff;
+    border-radius: 8px;
+    color: #e6e6e6;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-size: 13px;
+    text-shadow: 0 0 4px #00eaff;
+    box-shadow: 0 0 6px rgba(0, 234, 255, 0.4);
+}
+
+button:hover {
+    background: #00141a;
+    border-color: #00eaff;
+    box-shadow: 0 0 12px #00eaff;
+    transform: translateY(-2px);
+}
+
+/* Upload + Clear buttons */
+.upload-label,
+#clearBtn {
+    background: #0a0a0a;
+    border: 1px solid #ff00ff;
+    color: #ffbfff;
+    text-shadow: 0 0 6px #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+}
+
+.upload-label:hover,
+#clearBtn:hover {
+    background: #1a001a;
+    box-shadow: 0 0 14px #ff00ff;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+/* ————————————————————————————————————————————————
+   SEARCH BOX
+——————————————————————————————————————————————————— */
+#searchBox {
+    padding: 8px 12px;
+    width: 260px;
+    border-radius: 8px;
+    border: 1px solid #00eaff;
+    background: #000;
+    color: #e6e6e6;
+    transition: 0.2s ease;
+    box-shadow: 0 0 6px rgba(0, 234, 255, 0.3);
+}
+
+#searchBox:focus {
+    outline: none;
+    border-color: #00eaff;
+    box-shadow: 0 0 12px #00eaff;
+}
+
+/* ————————————————————————————————————————————————
+   LOG CONTAINER
+——————————————————————————————————————————————————— */
+#logcontainer {
+    padding: 22px;
+}
+
+/* ————————————————————————————————————————————————
+   LOG LINES — NEON GLOW
+——————————————————————————————————————————————————— */
+.logline {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(6px);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    border: 1px solid #111;
+    transition: 0.2s ease;
+    box-shadow: 0 0 6px rgba(0, 234, 255, 0.15);
+}
+
+.logline:hover {
+    background: rgba(20, 20, 20, 0.9);
+    border-color: #00eaff;
+    box-shadow: 0 0 12px #00eaff;
+}
+
+/* Line numbers */
+.logline-number {
+    color: #888;
+    margin-right: 12px;
+    user-select: none;
+    font-family: monospace;
+}
+
+/* ————————————————————————————————————————————————
+   JSON BLOCKS — NEON
+——————————————————————————————————————————————————— */
+pre {
+    margin: 10px 0 0 0;
+    padding: 12px;
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    border: 1px solid #333;
+    color: #f0f0f0;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.25);
+}
+
+/* ————————————————————————————————————————————————
+   DROP ZONE
+——————————————————————————————————————————————————— */
+#dropZone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    border: 3px dashed #00eaff;
+    color: #00eaff;
+    font-size: 28px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    text-shadow: 0 0 10px #00eaff;
+}
+
+/* ————————————————————————————————————————————————
+   COLLAPSIBLE MOD LIST
+——————————————————————————————————————————————————— */
+.collapsible {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+
+.collapsed {
+    max-height: 0;
+}
+
+/* ————————————————————————————————————————————————
+   SCROLLBAR — NEON
+——————————————————————————————————————————————————— */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00eaff;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #00eaff;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00bcd4;
+    box-shadow: 0 0 14px #00eaff;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Minecraft Log Viewer — Neon Edition</h2>
+
+<div class="controls">
+  <div class="toolbar">
+
+    <div class="group">
+      <strong>Level</strong>
+      <button onclick="filterLevel('ALL')">All</button>
+      <button onclick="filterLevel('INFO')">INFO</button>
+      <button onclick="filterLevel('WARN')">WARN</button>
+      <button onclick="filterLevel('ERROR')">ERROR</button>
+      <button onclick="filterLevel('DEBUG')">DEBUG</button>
+      <button onclick="filterLevel('TRACE')">TRACE</button>
+    </div>
+
+    <div class="group">
+      <strong>Search</strong>
+      <input type="text" id="searchBox" oninput="searchLogs()" placeholder="Search logs...">
+    </div>
+
+    <div class="group">
+      <strong id="modToggle" style="cursor:pointer;">Jump to mod ▾</strong>
+    </div>
+
+    <div class="group">
+      <label for="fileUpload" class="upload-label">Upload Log</label>
+      <input type="file" id="fileUpload" accept=".log,.txt">
+      <button id="clearBtn">Clear</button>
+    </div>
+
+  </div>
+
+  <div id="modButtons" class="collapsible"></div>
+</div>
+
+<div id="logcontainer"></div>
+
+<div id="dropZone">Drop log file to load</div>
+
+<script>
+/* ————————————————————————————————————————————————
+   NEON LEVEL COLORS
+——————————————————————————————————————————————————— */
+const LEVEL_COLORS = {
+    INFO:  "#00eaff",
+    WARN:  "#ffe600",
+    ERROR: "#ff2b2b",
+    DEBUG: "#c77dff",
+    TRACE: "#4d9dff",
+    OTHER: "#ffffff"
+};
+
+/* ————————————————————————————————————————————————
+   STATE
+——————————————————————————————————————————————————— */
+let modsCollapsed = false;
+let fullLogLines = [];
+let usePerformanceMode = false;
+const CHUNK_SIZE = 500;
+let renderedChunks = 0;
+const modColors = {};
+
+/* ————————————————————————————————————————————————
+   COLLAPSIBLE MOD LIST
+——————————————————————————————————————————————————— */
+document.getElementById("modToggle").addEventListener("click", () => {
+    modsCollapsed = !modsCollapsed;
+
+    const box = document.getElementById("modButtons");
+    const label = document.getElementById("modToggle");
+
+    if (modsCollapsed) {
+        box.classList.add("collapsed");
+        label.textContent = "Jump to mod ▸";
+    } else {
+        box.classList.remove("collapsed");
+        label.textContent = "Jump to mod ▾";
+    }
+});
+
+/* ————————————————————————————————————————————————
+   RANDOM NEON MOD COLORS
+——————————————————————————————————————————————————— */
+function randomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 100%, 60%)`;
+}
+
+/* ————————————————————————————————————————————————
+   LEVEL CLASSIFIER — NEOFORGE AWARE
+——————————————————————————————————————————————————— */
+function classifyLevel(line) {
+    const upper = line.toUpperCase();
+
+    if (/\bERROR\b/.test(upper)) return "ERROR";
+    if (/\bWARN\b/.test(upper))  return "WARN";
+    if (/\bINFO\b/.test(upper))  return "INFO";
+    if (/\bDEBUG\b/.test(upper)) return "DEBUG";
+    if (/\bTRACE\b/.test(upper)) return "TRACE";
+
+    return "OTHER";
+}
+
+/* ————————————————————————————————————————————————
+   MOD EXTRACTOR
+——————————————————————————————————————————————————— */
+function extractMod(line) {
+    const match = line.match(/\[([a-zA-Z0-9_\-\.]+)\//);
+    return match ? match[1] : null;
+}
+
+/* ————————————————————————————————————————————————
+   JSON PRETTY PRINT
+——————————————————————————————————————————————————— */
+function tryPrettyJSON(text) {
+    try {
+        const parsed = JSON.parse(text);
+        return `<pre>${JSON.stringify(parsed, null, 4)}</pre>`;
+    } catch {
+        return null;
+    }
+}
+
+/* ————————————————————————————————————————————————
+   BUILD MOD BUTTONS
+——————————————————————————————————————————————————— */
+function buildModButtons(lines) {
+    const modButtons = document.getElementById("modButtons");
+    modButtons.innerHTML = "";
+    Object.keys(modColors).forEach(k => delete modColors[k]);
+
+    for (let i = 0; i < lines.length; i++) {
+        const mod = extractMod(lines[i]);
+        if (mod && !modColors[mod]) {
+            modColors[mod] = randomColor();
+            const btn = document.createElement("button");
+            btn.textContent = mod;
+            btn.style.color = modColors[mod];
+            btn.style.borderColor = modColors[mod];
+            btn.style.textShadow = `0 0 6px ${modColors[mod]}`;
+            btn.onclick = () => jumpToMod(mod);
+            modButtons.appendChild(btn);
+        }
+    }
+
+    if (modButtons.children.length === 0) {
+        modButtons.classList.add("collapsed");
+        document.getElementById("modToggle").textContent = "Jump to mod ▸";
+        modsCollapsed = true;
+    } else {
+        modButtons.classList.remove("collapsed");
+        document.getElementById("modToggle").textContent = "Jump to mod ▾";
+        modsCollapsed = false;
+    }
+}
+
+/* ————————————————————————————————————————————————
+   MAIN RENDER FUNCTION
+——————————————————————————————————————————————————— */
+function renderLog(lines) {
+    const container = document.getElementById("logcontainer");
+    container.innerHTML = "";
+
+    fullLogLines = lines;
+    renderedChunks = 0;
+
+    buildModButtons(lines);
+
+    usePerformanceMode = lines.length > CHUNK_SIZE * 2;
+
+    if (!usePerformanceMode) {
+        while (renderNextChunk()) {}
+        if (container.lastElementChild) {
+            container.lastElementChild.scrollIntoView({ behavior: "smooth" });
+        }
+    } else {
+        renderNextChunk();
+        if (container.lastElementChild) {
+            container.lastElementChild.scrollIntoView({ behavior: "smooth" });
+        }
+        window.addEventListener("scroll", onWindowScroll);
+    }
+}
+
+/* ————————————————————————————————————————————————
+   RENDER NEXT CHUNK
+——————————————————————————————————————————————————— */
+function renderNextChunk() {
+    const container = document.getElementById("logcontainer");
+    const startIndex = renderedChunks * CHUNK_SIZE;
+    if (startIndex >= fullLogLines.length) return false;
+
+    const endIndex = Math.min(startIndex + CHUNK_SIZE, fullLogLines.length);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        const line = fullLogLines[i];
+        if (!line.trim()) continue;
+
+        const level = classifyLevel(line);
+        const mod = extractMod(line);
+
+        const div = document.createElement("div");
+        div.className = `logline level-${level} mod-${mod || "none"}`;
+        div.dataset.level = level;
+        div.dataset.mod = mod || "";
+
+        const lineNumberSpan = document.createElement("span");
+        lineNumberSpan.className = "logline-number";
+        lineNumberSpan.textContent = i + 1;
+
+        let safe = line.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const jsonMatch = line.match(/(\{.*\}|\[.*\])/);
+        const jsonBlock = jsonMatch ? tryPrettyJSON(jsonMatch[0]) : "";
+
+        const contentSpan = document.createElement("span");
+        contentSpan.innerHTML =
+            `<span style="color:${LEVEL_COLORS[level]}; text-shadow:0 0 6px ${LEVEL_COLORS[level]}">[${level}]</span> ` +
+            `<span style="color:${modColors[mod] || "#ccc"}; text-shadow:0 0 6px ${modColors[mod] || "#ccc"}">${safe}</span>` +
+            (jsonBlock || "");
+
+        div.appendChild(lineNumberSpan);
+        div.appendChild(contentSpan);
+
+        container.appendChild(div);
+    }
+
+    renderedChunks++;
+    return true;
+}
+
+/* ————————————————————————————————————————————————
+   SCROLL HANDLER
+——————————————————————————————————————————————————— */
+function onWindowScroll() {
+    if (!usePerformanceMode) return;
+
+    const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 400;
+
+    if (nearBottom) {
+        renderNextChunk();
+    }
+}
+
+/* ————————————————————————————————————————————————
+   FILTERS + SEARCH
+——————————————————————————————————————————————————— */
+function filterLevel(level) {
+    document.querySelectorAll(".logline").forEach(line => {
+        line.style.display =
+            level === "ALL" || line.dataset.level === level ? "block" : "none";
+    });
+}
+
+function searchLogs() {
+    const q = document.getElementById("searchBox").value.toLowerCase();
+    document.querySelectorAll(".logline").forEach(line => {
+        line.style.display = line.textContent.toLowerCase().includes(q)
+            ? "block"
+            : "none";
+    });
+}
+
+/* ————————————————————————————————————————————————
+   JUMP TO MOD
+——————————————————————————————————————————————————— */
+function jumpToMod(mod) {
+    const el = document.querySelector(`.mod-${mod}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ————————————————————————————————————————————————
+   FILE UPLOAD
+——————————————————————————————————————————————————— */
+document.getElementById("fileUpload").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const lines = e.target.result.split(/\r?\n/);
+        renderLog(lines);
+    };
+    reader.readAsText(file);
+});
+
+/* ————————————————————————————————————————————————
+   CLEAR
+——————————————————————————————————————————————————— */
+document.getElementById("clearBtn").addEventListener("click", () => {
+    document.getElementById("logcontainer").innerHTML = "";
+    document.getElementById("modButtons").innerHTML = "";
+    document.getElementById("searchBox").value = "";
+    fullLogLines = [];
+    renderedChunks = 0;
+});
+
+/* ————————————————————————————————————————————————
+   DRAG & DROP
+——————————————————————————————————————————————————— */
+const dropZone = document.getElementById("dropZone");
+
+window.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.style.display = "flex";
+});
+
+window.addEventListener("dragleave", e => {
+    if (e.target === dropZone) dropZone.style.display = "none";
+});
+
+window.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.style.display = "none";
+
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const lines = ev.target.result.split(/\r?\n/);
+        renderLog(lines);
+    };
+    reader.readAsText(file);
+});
+</script>
+</body>
+</html>
